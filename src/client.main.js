@@ -552,18 +552,18 @@ var CHAT_AI = (function () {
 /* AI 模型配置（工作角色栏）：选用哪个模型 + 是否开思考 + 台词频率；全局 localStorage 持久化 */
 var CHAT_CFG = (function () {
   var KEY = 'agents-pixe.chatCfg.v1';
-  var cfg = { model: null, thinking: false, freq: 'medium' };   // freq: low/medium/high 台词频率
-  try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && typeof s === 'object') { if (s.model && s.model.provider && s.model.model) cfg.model = { provider: s.model.provider, model: s.model.model }; cfg.thinking = s.thinking === true; if (s.freq === 'low' || s.freq === 'high') cfg.freq = s.freq; } } catch (e) {}
+  var cfg = { model: null, thinking: false, freq: 'low' };   // freq: low/medium/high 台词频率；默认 low（token 管控）
+  try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && typeof s === 'object') { if (s.model && s.model.provider && s.model.model) cfg.model = { provider: s.model.provider, model: s.model.model }; cfg.thinking = s.thinking === true; if (s.freq === 'low' || s.freq === 'medium' || s.freq === 'high') cfg.freq = s.freq; } } catch (e) {}
   var listeners = [];
   function persist() { try { localStorage.setItem(KEY, JSON.stringify(cfg)); schedulePersistSync(); } catch (e) {} }
   function notify() { listeners.forEach(function (f) { try { f(); } catch (e) {} }); }
   return {
-    get: function () { return { model: cfg.model, thinking: cfg.thinking === true, freq: cfg.freq || 'medium' }; },
+    get: function () { return { model: cfg.model, thinking: cfg.thinking === true, freq: cfg.freq || 'low' }; },
     modelKey: function () { return cfg.model ? cfg.model.provider + '/' + cfg.model.model : ''; },
     setModel: function (provider, model) { cfg.model = (provider && model) ? { provider: provider, model: model } : null; persist(); notify(); },
     setThinking: function (v) { cfg.thinking = !!v; persist(); notify(); },
     setFreq: function (f) { if (f === 'low' || f === 'medium' || f === 'high') { cfg.freq = f; persist(); notify(); } },
-    hydrate: function (raw) { try { var s = JSON.parse(raw); if (s && typeof s === 'object') { if (s.model && s.model.provider && s.model.model) cfg.model = { provider: s.model.provider, model: s.model.model }; cfg.thinking = s.thinking === true; if (s.freq === 'low' || s.freq === 'high') cfg.freq = s.freq; persist(); notify(); } } catch (e) {} },
+    hydrate: function (raw) { try { var s = JSON.parse(raw); if (s && typeof s === 'object') { if (s.model && s.model.provider && s.model.model) cfg.model = { provider: s.model.provider, model: s.model.model }; cfg.thinking = s.thinking === true; if (s.freq === 'low' || s.freq === 'medium' || s.freq === 'high') cfg.freq = s.freq; persist(); notify(); } } catch (e) {} },
     subscribe: function (f) { listeners.push(f); return function () { var i = listeners.indexOf(f); if (i >= 0) listeners.splice(i, 1); } }
   };
 })();
@@ -1419,7 +1419,7 @@ function WorkingRolesView(props) {
   var [aiOn, setAiOn] = React.useState(CHAT_AI.isOn());
   var [models, setModels] = React.useState([]);
   var [cfg, setCfg] = React.useState(CHAT_CFG.get());
-  var [stats, setStats] = React.useState({ calls: 0, fails: 0 });
+  var [stats, setStats] = React.useState({ calls: 0, fails: 0, budgeted: 0, cached: 0, tokens: { in: 0, out: 0, est: 0 } });
   var listRef = React.useRef(null);
   /* 进入页签/切换分部分类/搜索/语言/会话时，角色列表滚动回顶部 */
   /* 归零：列表自身 + 所有可滚动的祖先容器 */
@@ -1607,7 +1607,11 @@ function WorkingRolesView(props) {
                 React.createElement('option', { value: 'low' }, '低频（最省）')
               )
             ),
-            React.createElement('span', { style: { marginLeft: 'auto', fontSize: 11, opacity: 0.85, whiteSpace: 'nowrap' } }, '已调用 ' + stats.calls + ' 次' + (stats.fails > 0 ? '（失败 ' + stats.fails + '）' : ''))
+            React.createElement('span', { style: { marginLeft: 'auto', fontSize: 11, opacity: 0.85, whiteSpace: 'nowrap' } },
+              '已调用 ' + stats.calls + (stats.budget ? '/' + stats.budget.maxCallsPerHour : '') + ' 次'
+              + (stats.cached > 0 ? '（缓存 ' + stats.cached + '）' : '')
+              + (stats.budgeted > 0 ? '（预算拦截 ' + stats.budgeted + '）' : '')
+              + ' · 约 ' + (stats.tokens ? stats.tokens.est : 0) + ' token')
           )
         : null
     ),
