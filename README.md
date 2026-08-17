@@ -130,12 +130,13 @@ npm publish
 - `build-client.mjs` 把 prelude + roles.json + main 拼成自包含 bundle，无任何构建工具依赖。
 - peerDependencies（`@deepseek-ai/dsh-tools`、`@deepseek-ai/dsh-llm`）由 dsh 运行时依赖闭包提供，插件不重复安装。
 
-## 桌面壳（deepseek-desktop-harness）集成
+## 与桌面壳（deepseek-desktop-harness）的关系
 
-本插件是独立 npm 包，同时被 [deepseek-desktop-harness](https://github.com/EternalNight996/deepseek-desktop-harness) 作为内置插件消费：
+本插件是独立 npm 包，[deepseek-desktop-harness](https://github.com/EternalNight996/deepseek-desktop-harness) **不再内置**它；按需安装即可：
 
-- `scripts/vendor.mjs` 通过 `npm install --prefix dsh-runtime dsh-ui-agents-pixe` 把本包装进 `vendor/dsh-runtime/node_modules/dsh-ui-agents-pixe/`（随离线 dsh 打包为资源；包未发布时回退从同级 `../dsh-ui-agents-pixe` 本地仓库复制）；
-- `src-tauri/src/lib.rs` 首启把它复制到 `$DSH_HOME/profiles/web/node_modules/`，并以 `--patch <资源内 cordis.patch.yml>` 应用。
+```sh
+npx @deepseek-ai/dsh plugin --profile web add dsh-ui-agents-pixe
+```
 
 ## 待办 / 欠账
 
