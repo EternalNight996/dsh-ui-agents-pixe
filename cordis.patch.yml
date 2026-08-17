@@ -1,0 +1,7 @@
+# dsh-ui-agents-pixe 组合补丁：向 Web 表面新增一个 dsh.client 行（工作角色页签 + 像素办公室浮层）。
+# 包内自挂载：package.json 声明 dsh.bundle.patch，`dsh plugin add @deepseek-ai/dsh-ui-agents-pixe`
+# 后本层随 bundle 自动应用；桌面壳离线分发时也可用 `--patch <本文件路径>` 单独应用。
+# `modules` 节点的半边会扫描该行，并把本包的浏览器半边编入 window.__DSH_BOOT__。
+- insert:
+    - id: ui-agents-pixe
+      name: '@deepseek-ai/dsh-ui-agents-pixe'
