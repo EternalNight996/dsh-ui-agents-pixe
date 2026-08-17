@@ -7,19 +7,27 @@
 - 🛠 **agents_pixe_roles 工具**：宿主半边注册，agent 按角色名取回完整角色卡（定位 + 规则 + 清单 + 语气），以「某个角色/团队身份回应」时自动调用。
 - 📦 **持久客户端插件**：npm 双面包 + 组合补丁层，包内自挂载（`dsh.bundle.patch`），安装即生效，重启不丢。
 
-## 界面截图（真实抓屏）
-
-工作角色页签（选人 / 搜索 / 中英切换）：
-
 <p align="center">
-  <img src="assets/workspace-roles.png" width="760" alt="工作角色页签截图" />
+  <img src="assets/demo.gif" width="640" alt="dsh-ui-agents-pixe 全功能演示：工作角色页签 + 像素办公室浮层（真实录屏）" />
 </p>
 
-像素办公室浮层（像素小人 / 聊天 / 团队编排）：
+## 界面预览（真实抓屏）
+
+> 📸 全部真实抓屏/录屏。
+
+### 🧑‍💼 工作角色页签
 
 <p align="center">
-  <img src="assets/pixel-office.png" width="760" alt="像素办公室浮层截图" />
+  <img src="assets/workspace-roles.png" width="820" alt="工作角色页签：选人 / 搜索 / 中英切换" />
 </p>
+
+### 🏢 像素办公室浮层
+
+<p align="center">
+  <img src="assets/pixel-office.png" width="820" alt="像素办公室：像素小人 / 聊天 / 团队编排" />
+</p>
+
+> 更多完整桌面壳效果（对话主界面等）见 [deepseek-desktop-harness](https://github.com/EternalNight996/deepseek-desktop-harness) 的 README。
 
 ## 安装
 
@@ -72,10 +80,10 @@ agency-agents 全量角色卡（en 255 + zh 253 = 508 张）固化进本插件�
 ## 目录结构
 
 ```
-plugins/dsh-ui-agents-pixe/
+dsh-ui-agents-pixe/
 ├── package.json            # dsh.client 声明 + dsh.bundle.patch 自挂载
 ├── cordis.patch.yml        # 组合补丁行（- insert: ui-agents-pixe）
-├── assets/                 # README 截图
+├── assets/                 # README 截图/录屏（demo.gif + 真实抓屏）
 ├── lib/
 │   ├── index.js            # node 半边：agents_pixe_roles 工具 + /agents-pixe/* 路由
 │   ├── client.js           # browser 半边（构建产物，自包含 __ModuleLoader__.load）
