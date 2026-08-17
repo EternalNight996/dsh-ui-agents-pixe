@@ -26,7 +26,7 @@
 普通 npm / npx 安装只需要一条命令（官方 DSH CLI 推荐方式）：
 
 ```sh
-npx @deepseek-ai/dsh plugin --profile web add @deepseek-ai/dsh-ui-agents-pixe
+npx @deepseek-ai/dsh plugin --profile web add dsh-ui-agents-pixe
 ```
 
 > 包内 `dsh.bundle.patch` 声明了 `cordis.patch.yml`，`dsh plugin add` 后插件行自动挂载，无需手改任何 profile 补丁文件。首次安装后**重启 dsh web** 生效（之后改 UI 均为热更新）。
@@ -113,7 +113,7 @@ npm publish
 
 本插件是独立 npm 包，同时被 [deepseek-desktop-harness](https://github.com/EternalNight996/deepseek-desktop-harness) 作为内置插件消费：
 
-- `scripts/vendor.mjs` 通过 `npm install --prefix dsh-runtime @deepseek-ai/dsh-ui-agents-pixe` 把本包装进 `vendor/dsh-runtime/node_modules/@deepseek-ai/dsh-ui-agents-pixe/`（随离线 dsh 打包为资源；包未发布时回退从同级 `../dsh-ui-agents-pixe` 本地仓库复制）；
+- `scripts/vendor.mjs` 通过 `npm install --prefix dsh-runtime dsh-ui-agents-pixe` 把本包装进 `vendor/dsh-runtime/node_modules/dsh-ui-agents-pixe/`（随离线 dsh 打包为资源；包未发布时回退从同级 `../dsh-ui-agents-pixe` 本地仓库复制）；
 - `src-tauri/src/lib.rs` 首启把它复制到 `$DSH_HOME/profiles/web/node_modules/`，并以 `--patch <资源内 cordis.patch.yml>` 应用。
 
 ## 待办 / 欠账

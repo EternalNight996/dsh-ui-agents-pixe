@@ -1,5 +1,5 @@
 window.__ModuleLoader__.load({
-  id: "@deepseek-ai/dsh-ui-agents-pixe",
+  id: "dsh-ui-agents-pixe",
   factory: (require) => {
     var module = { exports: {} };
     var exports = module.exports;

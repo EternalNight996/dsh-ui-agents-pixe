@@ -11,7 +11,7 @@ const root = join(here, '..')
 const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'))
 
 test('包名与目录一致', () => {
-  assert.equal(pkg.name, '@deepseek-ai/dsh-ui-agents-pixe')
+  assert.equal(pkg.name, 'dsh-ui-agents-pixe')
 })
 
 test('客户端 bundle 的 id 与包名一致', () => {
