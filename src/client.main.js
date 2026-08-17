@@ -594,7 +594,8 @@ function providerReq(rec, info) {
     roleDesc: rec.desc || '',
     state: info.state || 'idle', activity: info.activity || '',
     sessionId: info.sessionId || null, isLeader: info.isLeader === true,
-    context: info.context || '', partnerName: info.partnerName || ''
+    context: info.context || '', partnerName: info.partnerName || '',
+    aiOn: info.aiOn === true
   };
 }
 /* 内置 AI 生产者：fetch 宿主端点 /agents-pixe/chat（调 dsh 自配模型），失败返回 null 回退 */
@@ -607,6 +608,7 @@ function builtinProvider(req) {
   q.set('activity', req.activity || '');
   q.set('isLeader', req.isLeader ? 'true' : 'false');
   q.set('thinking', cfg.thinking ? 'on' : 'off');
+  q.set('aiEnabled', req.aiOn ? '1' : '0');   // AI 模式授权标记：服务端硬门凭此放行
   if (req.roleDesc) q.set('roleDesc', req.roleDesc);
   if (cfg.model) { q.set('provider', cfg.model.provider); q.set('model', cfg.model.model); }
   if (req.context) q.set('context', req.context);
