@@ -21,7 +21,7 @@
   "scripts": {
     "build:client": "node scripts/build-client.mjs",
     "gen:roles": "node scripts/gen-roles.mjs",
-    "test": "node --test test/"
+    "test": "node --test"
   },
   "peerDependencies": {
     "@deepseek-ai/dsh-llm": "^0.1.0-rc.6",

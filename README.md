@@ -99,7 +99,7 @@ node scripts/gen-roles.mjs
 node scripts/build-client.mjs
 
 # 冒烟测试
-node --test test/
+node --test
 
 # 发布（需已 npm login；版本号在 package.json）
 npm publish
