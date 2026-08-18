@@ -4,6 +4,12 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.0.1] - 2026-08-18
+
+### 文档
+
+- 新增 `CHANGELOG.md`（Keep a Changelog 格式），并随包发布，保证 npm 包与 GitHub 仓库内容同步。
+
 ## [1.0.0] - 2026-08-17
 
 首个独立 npm 包发布版本（从 deepseek-desktop-harness/plugins 拆出）。
