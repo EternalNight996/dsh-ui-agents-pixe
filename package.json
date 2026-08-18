@@ -16,6 +16,7 @@
     "lib/roles-full.json",
     "cordis.patch.yml",
     "README.md",
+    "CHANGELOG.md",
     "assets/"
   ],
   "scripts": {
