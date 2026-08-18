@@ -1307,12 +1307,11 @@ function OfficeOverlay(props) {
         React.createElement('span', { style: { width: 8, height: 8, borderRadius: 4, background: running ? '#22c55e' : '#94a3b8', display: 'inline-block', flexShrink: 0 } }),
         '🖥️ 像素办公室（' + roles.length + '）'
       ),
-      React.createElement('button', { onClick: function () { setPickerOpen(!pickerOpen); }, title: '选择角色', style: { cursor: 'pointer', border: '1px solid var(--dsw-alias-border-l1,#ccc)', background: 'var(--dsw-alias-bg-layer-1,#fff)', color: 'inherit', borderRadius: 6, padding: '2px 8px', fontSize: 12 } }, pickerOpen ? '收起' : '＋ 选人'),
-      React.createElement('button', { onClick: function () { setZoom(Math.max(0.5, zoom - 0.25)); }, title: '缩小', style: { cursor: 'pointer', border: '1px solid var(--dsw-alias-border-l1,#ccc)', background: 'var(--dsw-alias-bg-layer-1,#fff)', color: 'inherit', borderRadius: 6, padding: '2px 7px', fontSize: 12, lineHeight: 1 } }, '−'),
-      React.createElement('button', { onClick: function () { setZoom(Math.min(2.5, zoom + 0.25)); }, title: '放大', style: { cursor: 'pointer', border: '1px solid var(--dsw-alias-border-l1,#ccc)', background: 'var(--dsw-alias-bg-layer-1,#fff)', color: 'inherit', borderRadius: 6, padding: '2px 7px', fontSize: 12, lineHeight: 1 } }, '＋'),
-      React.createElement(AiToggle, { on: aiOn, onChange: function (v) { CHAT_AI.set(v); } }),
-      React.createElement('button', { onClick: openPixeSettings, title: '设置', style: { cursor: 'pointer', border: '1px solid var(--dsw-alias-border-l1,#ccc)', background: 'var(--dsw-alias-bg-layer-1,#fff)', color: 'inherit', borderRadius: 6, padding: '4px 12px', fontSize: 16, lineHeight: 1.2 } }, '⚙️'),
-      React.createElement('span', { onClick: function (e) { e.stopPropagation(); setCollapsed(true); }, title: '折叠', style: { cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: '0 2px' } }, '—')
+      React.createElement('button', { onClick: function () { setPickerOpen(!pickerOpen); }, title: '选择角色', style: { cursor: 'pointer', border: '1px solid var(--dsw-alias-border-l1,#ccc)', background: 'var(--dsw-alias-bg-layer-1,#fff)', color: 'inherit', borderRadius: 7, padding: '6px 14px', fontSize: 14, lineHeight: 1.3 } }, pickerOpen ? '收起' : '＋ 选人'),
+      React.createElement('button', { onClick: function () { setZoom(Math.max(0.5, zoom - 0.25)); }, title: '缩小', style: { cursor: 'pointer', border: '1px solid var(--dsw-alias-border-l1,#ccc)', background: 'var(--dsw-alias-bg-layer-1,#fff)', color: 'inherit', borderRadius: 7, padding: '6px 12px', fontSize: 15, lineHeight: 1.3 } }, '−'),
+      React.createElement('button', { onClick: function () { setZoom(Math.min(2.5, zoom + 0.25)); }, title: '放大', style: { cursor: 'pointer', border: '1px solid var(--dsw-alias-border-l1,#ccc)', background: 'var(--dsw-alias-bg-layer-1,#fff)', color: 'inherit', borderRadius: 7, padding: '6px 12px', fontSize: 15, lineHeight: 1.3 } }, '＋'),
+      React.createElement('button', { onClick: openPixeSettings, title: '设置', style: { cursor: 'pointer', border: '1px solid var(--dsw-alias-border-l1,#ccc)', background: 'var(--dsw-alias-bg-layer-1,#fff)', color: 'inherit', borderRadius: 7, padding: '6px 14px', fontSize: 17, lineHeight: 1.3 } }, '⚙️'),
+      React.createElement('span', { onClick: function (e) { e.stopPropagation(); setCollapsed(true); }, title: '折叠', style: { cursor: 'pointer', fontSize: 17, lineHeight: 1, padding: '6px 6px', alignSelf: 'center' } }, '—')
     ),
     pickerOpen
       ? React.createElement('div', { style: { padding: 10, width: 340, maxHeight: 460, overflowY: 'auto' } },
@@ -1611,45 +1610,8 @@ function WorkingRolesView(props) {
         React.createElement('input', { value: q, onChange: function (e) { setQ(e.target.value); }, placeholder: '搜索角色…', style: { flex: 1, maxWidth: 340, padding: '7px 12px', borderRadius: 8, border: '1px solid var(--dsw-alias-border-l1, #ccc)', background: 'var(--dsw-alias-bg-layer-1, #fff)', color: 'inherit' } }),
         React.createElement('button', { onClick: function () { setLang(lang === 'zh' ? 'en' : 'zh'); }, style: btnBase }, lang === 'zh' ? '中文' : 'EN'),
         React.createElement('div', { style: { flex: 1 } }),
-        React.createElement(AiToggle, { on: aiOn, onChange: function (v) { CHAT_AI.set(v); } }),
         React.createElement('button', { onClick: applyToChat, style: { background: '#2563eb', color: '#ffffff', fontWeight: 700, fontSize: 13, padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', boxShadow: '0 2px 8px rgba(37,99,235,0.4)', flexShrink: 0 } }, '✅ 应用到对话（' + selected.length + '）')
-      ),
-      aiOn
-        ? React.createElement('div', { style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--dsw-alias-border-l1, #eee)', fontSize: 12 } },
-            React.createElement('span', { style: { fontWeight: 600, opacity: 0.9 } }, '🤖 AI 模型'),
-            React.createElement('select', {
-              value: cfgModelKey,
-              onChange: function (e) {
-                var v = e.target.value;
-                if (!v) { CHAT_CFG.setModel(null, null); return; }
-                var i = v.indexOf('/');
-                CHAT_CFG.setModel(v.slice(0, i), v.slice(i + 1));
-              },
-              style: { padding: '5px 8px', borderRadius: 7, border: '1px solid var(--dsw-alias-border-l1, #ccc)', background: 'var(--dsw-alias-bg-layer-1, #fff)', color: 'inherit', fontSize: 12, maxWidth: 280 }
-            },
-              React.createElement('option', { value: '' }, '自动（第一个模型）'),
-              modelOptions.map(function (o) { return React.createElement('option', { key: o.key, value: o.key }, o.label); })
-            ),
-            React.createElement('label', { style: { display: 'inline-flex', alignItems: 'center', gap: 5, cursor: 'pointer' } },
-              React.createElement('input', { type: 'checkbox', checked: cfg.thinking, onChange: function (e) { CHAT_CFG.setThinking(e.target.checked); }, style: { cursor: 'pointer' } }),
-              '开思考'
-            ),
-            React.createElement('span', { style: { opacity: 0.65, fontSize: 11 } }, cfg.thinking ? '更慢、更费 token' : '关闭思考，省 token'),
-            React.createElement('label', { style: { display: 'inline-flex', alignItems: 'center', gap: 5 } },
-              '台词频率',
-              React.createElement('select', { value: cfg.freq || 'medium', onChange: function (e) { CHAT_CFG.setFreq(e.target.value); }, style: { padding: '3px 6px', borderRadius: 6, border: '1px solid var(--dsw-alias-border-l1, #ccc)', background: 'var(--dsw-alias-bg-layer-1, #fff)', color: 'inherit', fontSize: 12 } },
-                React.createElement('option', { value: 'high' }, '高频（最活泼）'),
-                React.createElement('option', { value: 'medium' }, '中频（省 token）'),
-                React.createElement('option', { value: 'low' }, '低频（最省）')
-              )
-            ),
-            React.createElement('span', { style: { marginLeft: 'auto', fontSize: 11, opacity: 0.85, whiteSpace: 'nowrap' } },
-              '已调用 ' + stats.calls + (stats.budget ? '/' + stats.budget.maxCallsPerHour : '') + ' 次'
-              + (stats.cached > 0 ? '（缓存 ' + stats.cached + '）' : '')
-              + (stats.budgeted > 0 ? '（预算拦截 ' + stats.budgeted + '）' : '')
-              + ' · 约 ' + (stats.tokens ? stats.tokens.est : 0) + ' token')
-          )
-        : null
+      )
     ),
     React.createElement('div', { style: { flex: 1, minHeight: 0, display: 'flex' } },
       React.createElement('div', { style: { width: 168, minHeight: 0, flexShrink: 0, borderRight: '1px solid var(--dsw-alias-border-l1, #eee)', overflowY: 'auto', padding: '8px 6px' } },
