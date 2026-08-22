@@ -2,6 +2,32 @@
 
 给 DeepSeek Harness 的 Web 主窗口加「**工作角色**」页签 + 对话区「**像素办公室**」浮层——255+ 位专家变成会走会聊的像素小人。**一条命令安装，不改 dsh 源码。**
 
+## ⚡ 安装
+
+官方 DSH CLI 一条命令安装：
+
+```sh
+dsh plugin --profile web add dsh-ui-agents-pixe
+```
+
+> ⚠️ 请一律用 `dsh plugin` 命令，**不要用 `npx @deepseek-ai/dsh`**——npx 对包名每次都会重新下载一份 dsh，装插件不该重装 dsh。
+>
+> 包内 `dsh.bundle.patch` 声明了 `cordis.patch.yml`，`dsh plugin add` 后插件行自动挂载，无需手改任何 profile 补丁文件。首次安装后**重启 dsh web** 生效（之后改 UI 均为热更新）。
+
+安装完成后：聊天页出现「工作角色」页签，对话区出现可折叠的像素办公室浮层；模型选择器、会话模型完全不受影响。
+
+### 🖥 推荐：dsh-desktop 桌面壳
+
+想要双击即用的完整桌面体验（自动带起 dsh web + 本插件效果），推荐桌面壳 [**dsh-desktop**](https://github.com/EternalNight996/dsh-desktop)——Tauri 打包的 DeepSeek Harness 桌面工作台，开箱即用。
+
+也可以先装可视化插件市场，在设置界面里浏览、搜索、一键安装本插件：
+
+```sh
+dsh plugin --profile web add dshmarket
+```
+
+## ✨ 功能
+
 - 🧑‍💼 **工作角色页签**：The Agency（en 255）+ agency-agents-zh（zh 253）= **508 张完整角色卡**内置随包分发，搜索 / 中英切换 / 分部分类选人。
 - 🏢 **像素办公室**：`shell.overlay` 浮层，Canvas 2D 程序化像素小人（站立 / 打字 / 踱步 + 四态徽章），可拖动、折叠、缩放，选人即入列；闲置与工作中的人都会聊天，台词可接 AI。
 - 🛠 **agents_pixe_roles 工具**：宿主半边注册，agent 按角色名取回完整角色卡（定位 + 规则 + 清单 + 语气），以「某个角色/团队身份回应」时自动调用。
@@ -28,30 +54,6 @@
 </p>
 
 > 更多完整桌面壳效果（对话主界面等）见 [dsh-desktop](https://github.com/EternalNight996/dsh-desktop) 的 README。
-
-## 安装
-
-官方 DSH CLI 一条命令安装：
-
-```sh
-dsh plugin --profile web add dsh-ui-agents-pixe
-```
-
-> ⚠️ 请一律用 `dsh plugin` 命令，**不要用 `npx @deepseek-ai/dsh`**——npx 对包名每次都会重新下载一份 dsh，装插件不该重装 dsh。
->
-> 包内 `dsh.bundle.patch` 声明了 `cordis.patch.yml`，`dsh plugin add` 后插件行自动挂载，无需手改任何 profile 补丁文件。首次安装后**重启 dsh web** 生效（之后改 UI 均为热更新）。
-
-安装完成后：聊天页出现「工作角色」页签，对话区出现可折叠的像素办公室浮层；模型选择器、会话模型完全不受影响。
-
-### 🖥 推荐：dsh-desktop 桌面壳
-
-想要双击即用的完整桌面体验（自动带起 dsh web + 本插件效果），推荐桌面壳 [**dsh-desktop**](https://github.com/EternalNight996/dsh-desktop)——Tauri 打包的 DeepSeek Harness 桌面工作台，开箱即用。
-
-也可以先装可视化插件市场，在设置界面里浏览、搜索、一键安装本插件：
-
-```sh
-dsh plugin --profile web add dshmarket
-```
 
 ## AI 聊天（开关 + 可插拔接口）
 
@@ -180,7 +182,33 @@ npm publish
 dsh plugin --profile web add dsh-ui-agents-pixe
 ```
 
-## 待办 / 欠账
+## 待办 / 后续开发方向
+
+### 数据与持久化
 
 - [ ] 保存的自定义团队跨环境不丢（当前在 localStorage；可选导出/导入 JSON 或宿主侧持久化）。
-- [ ] 像素人「运行态」目前靠会话 `running` 信号；精确到「每个角色各自的工具调用」需接真实事件流（HookProvider 形态）。
+- [ ] 自定义角色表单编辑器：在 UI 里增删改角色卡（当前仅 AI 生成 + 导入），含角色卡格式校验。
+
+### 角色工具（agent 侧）
+
+- [ ] 按部门 / 技能 / 关键词检索角色（当前 `agents_pixe_roles` 只按名查）。
+- [ ] 团队一键召唤：一次传入整个预设团队（29 个预设团队名 → 展开为成员角色卡）。
+- [ ] 角色卡增量追问：支持按章节取卡（只要规则 / 只要清单），进一步压 token。
+
+### 像素办公室（表现层）
+
+- [ ] 更多状态动画：喝咖啡 / 开会 / 庆祝等；agent 完成任务时小人举手提示。
+- [ ] 场景与皮肤：多背景（会议室 / 茶水间）、白天黑夜主题、像素人换装。
+- [ ] 精确运行态：目前靠会话 `running` 信号；精确到「每个角色各自的工具调用」需接真实事件流（HookProvider 形态）。
+- [ ] 大团队性能：50+ 人同屏时 Canvas 脏矩形 / 离屏画布优化。
+
+### AI 闲聊
+
+- [ ] 台词注入角色性格：把角色卡「语气」段落喂给 `/agents-pixe/chat`，按角色风格说话。
+- [ ] 台词多语言：跟随 dsh UI locale 输出中/英台词。
+
+### 工程化
+
+- [ ] 设置分区文案 i18n（当前硬编码中文）。
+- [ ] 客户端 bundle 自动化冒烟测试（当前测试仅覆盖宿主半边）。
+- [ ] CI：发布前自动跑 `gen-roles` 数据一致性校验（角色库上游更新时 508 张卡数量比对）。
