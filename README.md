@@ -31,28 +31,26 @@
 
 ## 安装
 
-推荐用官方 DSH CLI 一条命令安装：
+官方 DSH CLI 一条命令安装：
 
 ```sh
 dsh plugin --profile web add dsh-ui-agents-pixe
 ```
 
-没有全局安装 dsh 时可用 npx 等价命令：
-
-```sh
-npx @deepseek-ai/dsh plugin --profile web add dsh-ui-agents-pixe
-```
-
+> ⚠️ 请一律用 `dsh plugin` 命令，**不要用 `npx @deepseek-ai/dsh`**——npx 对包名每次都会重新下载一份 dsh，装插件不该重装 dsh。
+>
 > 包内 `dsh.bundle.patch` 声明了 `cordis.patch.yml`，`dsh plugin add` 后插件行自动挂载，无需手改任何 profile 补丁文件。首次安装后**重启 dsh web** 生效（之后改 UI 均为热更新）。
 
 安装完成后：聊天页出现「工作角色」页签，对话区出现可折叠的像素办公室浮层；模型选择器、会话模型完全不受影响。
 
 ### 🖥 推荐：dsh-desktop 桌面壳
 
-想要双击即用的完整桌面体验（自动带起 dsh web + 本插件效果），推荐安装桌面壳 [**dsh-desktop**](https://github.com/EternalNight996/dsh-desktop)——Tauri 打包的 DeepSeek Harness 桌面工作台，开箱即用：
+想要双击即用的完整桌面体验（自动带起 dsh web + 本插件效果），推荐桌面壳 [**dsh-desktop**](https://github.com/EternalNight996/dsh-desktop)——Tauri 打包的 DeepSeek Harness 桌面工作台，开箱即用。
+
+也可以先装可视化插件市场，在设置界面里浏览、搜索、一键安装本插件：
 
 ```sh
-dsh plugin --profile web add dshmarket   # 可视化插件市场，装完在设置里一键装本插件
+dsh plugin --profile web add dshmarket
 ```
 
 ## AI 聊天（开关 + 可插拔接口）
