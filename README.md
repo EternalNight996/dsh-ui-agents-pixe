@@ -27,11 +27,17 @@
   <img src="assets/pixel-office.png" width="820" alt="像素办公室：像素小人 / 聊天 / 团队编排" />
 </p>
 
-> 更多完整桌面壳效果（对话主界面等）见 [deepseek-desktop-harness](https://github.com/EternalNight996/deepseek-desktop-harness) 的 README。
+> 更多完整桌面壳效果（对话主界面等）见 [dsh-desktop](https://github.com/EternalNight996/dsh-desktop) 的 README。
 
 ## 安装
 
-普通 npm / npx 安装只需要一条命令（官方 DSH CLI 推荐方式）：
+推荐用官方 DSH CLI 一条命令安装：
+
+```sh
+dsh plugin --profile web add dsh-ui-agents-pixe
+```
+
+没有全局安装 dsh 时可用 npx 等价命令：
 
 ```sh
 npx @deepseek-ai/dsh plugin --profile web add dsh-ui-agents-pixe
@@ -40,6 +46,14 @@ npx @deepseek-ai/dsh plugin --profile web add dsh-ui-agents-pixe
 > 包内 `dsh.bundle.patch` 声明了 `cordis.patch.yml`，`dsh plugin add` 后插件行自动挂载，无需手改任何 profile 补丁文件。首次安装后**重启 dsh web** 生效（之后改 UI 均为热更新）。
 
 安装完成后：聊天页出现「工作角色」页签，对话区出现可折叠的像素办公室浮层；模型选择器、会话模型完全不受影响。
+
+### 🖥 推荐：dsh-desktop 桌面壳
+
+想要双击即用的完整桌面体验（自动带起 dsh web + 本插件效果），推荐安装桌面壳 [**dsh-desktop**](https://github.com/EternalNight996/dsh-desktop)——Tauri 打包的 DeepSeek Harness 桌面工作台，开箱即用：
+
+```sh
+dsh plugin --profile web add dshmarket   # 可视化插件市场，装完在设置里一键装本插件
+```
 
 ## AI 聊天（开关 + 可插拔接口）
 
@@ -160,12 +174,12 @@ npm publish
 - `build-client.mjs` 把 prelude + roles.json + main 拼成自包含 bundle，无任何构建工具依赖。
 - peerDependencies（`@deepseek-ai/dsh-tools`、`@deepseek-ai/dsh-llm`）由 dsh 运行时依赖闭包提供，插件不重复安装。
 
-## 与桌面壳（deepseek-desktop-harness）的关系
+## 与桌面壳（dsh-desktop）的关系
 
-本插件是独立 npm 包，[deepseek-desktop-harness](https://github.com/EternalNight996/deepseek-desktop-harness) **不再内置**它；按需安装即可：
+本插件是独立 npm 包，[dsh-desktop](https://github.com/EternalNight996/dsh-desktop) **不再内置**它；按需安装即可：
 
 ```sh
-npx @deepseek-ai/dsh plugin --profile web add dsh-ui-agents-pixe
+dsh plugin --profile web add dsh-ui-agents-pixe
 ```
 
 ## 待办 / 欠账
