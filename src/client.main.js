@@ -261,48 +261,12 @@ var PRESETS = [
   { name: '客户成功团队', leader: 'specialized/customer-success-manager', roles: ['specialized/customer-success-manager', 'support/support-support-responder', 'specialized/retail-customer-returns', 'support/support-analytics-reporter'] }
 ];
 
-/* ---------- 智子内核（客户端随行版）：随「应用到对话」一起注入对话框 ---------- */
-var PIXE_SCOPE = null;   // 设置分区绑定的 settingsScope（apply() 里赋值，供 shortInstruction 读取内核配置）
-function kernelText(mode, lang, persona) {
-  var self = (persona.selfName || '本尊').trim() || '本尊';
-  var master = (persona.userTitle || '主上').trim() || '主上';
-  var tone = persona.tone || 'arrogant';
-  if (persona.override && persona.override.trim()) {
-    return persona.override.split('{{self}}').join(self).split('{{master}}').join(master);
-  }
-  var D = lang === 'en' ? KERNEL_DATA.EN : KERNEL_DATA.ZH;
-  var text = (D[mode] || D.balanced).split('{{self}}').join(self).split('{{master}}').join(master);
-  var tl = ((KERNEL_DATA.TONE_LINE[lang] || KERNEL_DATA.TONE_LINE.zh)[tone] || '')
-    .split('{{self}}').join(self).split('{{master}}').join(master);
-  if (tl && text.indexOf('\n\n') >= 0) text = text.replace('\n\n', '\n\n' + tl + '\n\n');
-  return text;
-}
-/* 读当前内核配置（来自设置分区 scope.getSnapshot().value）；返回要附加进指令的内核文本，或 '' */
-function currentKernel() {
-  try {
-    if (!PIXE_SCOPE || typeof PIXE_SCOPE.getSnapshot !== 'function') return '';
-    var snap = PIXE_SCOPE.getSnapshot();
-    var v = (snap && snap.value && typeof snap.value === 'object') ? snap.value : {};
-    if (v.kernelOn !== true) return '';
-    return kernelText(v.kernelMode, v.kernelLang || 'zh', {
-      selfName: v.kernelSelf || '', userTitle: v.kernelMaster || '', tone: v.kernelTone || '', override: v.kernelOverride || ''
-    });
-  } catch (e) { return ''; }
-}
-
 function shortInstruction(records, leaderKey, teamName) {
   if (records.length === 0) return '';
-  var instr;
-  if (records.length === 1 && !leaderKey) instr = '请以「' + records[0].name + '」的角色身份回应。';
-  else {
-    var label = teamName || (leaderKey && INDEX.map[leaderKey] ? INDEX.map[leaderKey].name + '团队' : '角色团队');
-    var names = records.map(function (r) { return (r.key === leaderKey ? '👑' : '') + r.name; }).join('、');
-    instr = '请以「' + label + '」团队协作回应（' + names + '）。';
-  }
-  /* 「开启内核模式」时随指令一起注入内核，发送时模型一并调取 */
-  var k = currentKernel();
-  if (k) instr += '\n\n【内核】' + k;
-  return instr;
+  if (records.length === 1 && !leaderKey) return '请以「' + records[0].name + '」的角色身份回应。';
+  var label = teamName || (leaderKey && INDEX.map[leaderKey] ? INDEX.map[leaderKey].name + '团队' : '角色团队');
+  var names = records.map(function (r) { return (r.key === leaderKey ? '👑' : '') + r.name; }).join('、');
+  return '请以「' + label + '」团队协作回应（' + names + '）。';
 }
 
 /* ---------- 像素小人 ---------- */
@@ -735,6 +699,50 @@ function fmtTok(n) {
   return String(v);
 }
 
+/* 角色卡正文 markdown → JSX（按 ## 拆节，去行首 emoji） */
+function renderRoleCard(full) {
+  var s = String(full || '');
+  if (!s) return React.createElement('div', { style: { opacity: 0.6 } }, '（无内容）');
+  var chunks = s.split(/\n(?=##)/);
+  return chunks.map(function (chunk, i) {
+    var m = chunk.match(/^##\s+(.+)/);
+    var title = m ? m[1].replace(/^[^\p{L}\p{N}]*/u, '').trim() : '';
+    var body = m ? chunk.replace(/^##\s+[^\n]*/, '') : chunk;
+    return React.createElement('div', { key: i, style: { marginBottom: 10 } },
+      title
+        ? React.createElement('div', { style: { fontSize: 13, fontWeight: 700, marginBottom: 3, color: 'var(--dsw-alias-label-primary, inherit)' } }, '· ' + title)
+        : null,
+      React.createElement('div', { style: { fontSize: 12, lineHeight: 1.7, whiteSpace: 'pre-wrap', opacity: 0.9 } }, body.trim())
+    );
+  });
+}
+
+/* 角色卡详情模态框：左键点击像素人时打开（全屏覆盖层 + 角色完整卡分段渲染） */
+function renderRoleModal(detail, loading, onClose) {
+  if (!loading && !detail) return null;
+  var inner;
+  if (loading) {
+    inner = React.createElement('div', { style: { padding: 30, textAlign: 'center', opacity: 0.7 } }, '加载角色卡…');
+  } else {
+    inner = [
+      React.createElement('div', { key: 'h', style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 } },
+        React.createElement('span', { style: { fontSize: 17, fontWeight: 700 } }, detail.name),
+        React.createElement('span', { style: { flex: 1 } }),
+        React.createElement('button', { onClick: function () { onClose(null); }, style: { cursor: 'pointer', border: '1px solid var(--dsw-alias-border-l1,#ccc)', background: 'var(--dsw-alias-bg-layer-1,#fff)', color: 'inherit', borderRadius: 8, padding: '4px 10px', fontSize: 13 } }, '✕')
+      ),
+      detail.desc
+        ? React.createElement('div', { key: 'd', style: { fontSize: 13, opacity: 0.85, marginBottom: 12, lineHeight: 1.6 } }, detail.desc)
+        : null,
+      React.createElement('div', { key: 'b', style: { borderTop: '1px solid var(--dsw-alias-border-l2, #eee)', paddingTop: 12 } }, renderRoleCard(detail.full))
+    ];
+  }
+  return React.createElement('div', {
+    style: { position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.45)', padding: 24 }
+  },
+    React.createElement('div', { style: { background: 'var(--dsw-alias-bg-overlay, #fff)', color: 'var(--dsw-alias-label-primary)', borderRadius: 14, maxWidth: 560, width: '100%', maxHeight: '84vh', overflowY: 'auto', padding: 18, boxShadow: '0 12px 40px rgba(0,0,0,0.4)', position: 'relative' } }, inner)
+  );
+}
+
 /* 模型调用计数：GET /agents-pixe/stats → { calls, fails } */
 function fetchStats() {
   return fetch('/agents-pixe/stats')
@@ -1128,7 +1136,11 @@ function OfficeCanvas(props) {
     var x = (e.clientX - rect.left) / zoom;
     var y = (e.clientY - rect.top) / zoom;
     var hit = hitTest(x, y);
-    if (hit) CLICKED = { key: hit.key, t: performance.now(), line: clickLine(hit.name), name: hit.name };
+    if (hit) {
+      CLICKED = { key: hit.key, t: performance.now(), line: clickLine(hit.name), name: hit.name };
+      /* 左键点击像素人 → 打开该角色完整卡详情 */
+      if (props.onOpenRole) props.onOpenRole(hit.key);
+    }
   }
   function onCanvasMove(e) {
     var canvas = canvasRef.current;
@@ -1220,6 +1232,18 @@ function OfficeOverlay(props) {
   var [tok, setTok] = React.useState({ in: 0, out: 0, cachePct: 0, turns: 0, steps: 0 });
   var [teamMsg, setTeamMsg] = React.useState('');
   var teamMsgTimer = React.useRef(null);
+  var [roleDetail, setRoleDetail] = React.useState(null);
+  var [roleDetailLoading, setRoleDetailLoading] = React.useState(false);
+  var openRoleDetail = function (key) {
+    if (!key) return;
+    setRoleDetailLoading(true);
+    try {
+      fetch('/agents-pixe/role?key=' + encodeURIComponent(key))
+        .then(function (r) { return r.json(); })
+        .then(function (j) { setRoleDetailLoading(false); if (j && j.found) setRoleDetail(j); })
+        .catch(function () { setRoleDetailLoading(false); });
+    } catch (e) { setRoleDetailLoading(false); }
+  };
   var drag = React.useRef(null);
   var resize = React.useRef(null);
   var prevSidRef = React.useRef(sid);
@@ -1444,7 +1468,7 @@ function OfficeOverlay(props) {
           ),
           React.createElement(RolePicker, null)
         )
-      : React.createElement(OfficeCanvas, { roles: roles, leader: leader, zoom: zoom, working: running, done: done, page: page, activity: activity, sessionId: sid }),
+      : React.createElement(OfficeCanvas, { roles: roles, leader: leader, zoom: zoom, working: running, done: done, page: page, activity: activity, sessionId: sid, onOpenRole: openRoleDetail }),
     /* 头像条 + 翻页按钮同行：◀ [全员 emoji] ▶ */
     roles.length > 0
       ? React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 4, padding: '5px 8px', borderTop: '1px solid var(--dsw-alias-border-l1, #eee)' } },
@@ -1464,7 +1488,8 @@ function OfficeOverlay(props) {
     React.createElement('div', {
       onMouseDown: onResizeDown, title: '拖拽缩放',
       style: { position: 'absolute', right: 0, bottom: 0, width: 18, height: 18, cursor: 'nwse-resize', background: 'linear-gradient(135deg, transparent 50%, var(--dsw-alias-border-l2, #999) 50%)' }
-    })
+    }),
+    renderRoleModal(roleDetail, roleDetailLoading, setRoleDetail)
   );
 }
 
@@ -1825,7 +1850,6 @@ function PixeSettingsSection(props) {
   );
   var value = (snap && snap.value && typeof snap.value === 'object') ? snap.value : {};
   var enabled = value.enabled === true;
-  var kernelOn = value.kernelOn === true;
   var row = function (label, hint, checked, onChange) {
     return React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 } },
       React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 2 } },
@@ -1858,41 +1882,6 @@ function PixeSettingsSection(props) {
       React.createElement('div', null, '· agents_pixe_team 会开 N+2 个子代理（每个带完整卡独立执行），成本高，深度任务再用。'),
       React.createElement('div', null, '· 办公室浮层标题栏实时显示当前会话全局 token 计量（↑输入 ↓输出，含缓存读写）。'),
       React.createElement('div', null, '· AI 闲聊开关在办公室浮层顶部（默认关，走罐头台词，零模型调用；开启后有每小时预算管控）。')),
-    React.createElement('div', { style: { borderTop: '1px solid var(--dsw-alias-border-l2, #eee)', paddingTop: 14, fontSize: 13, fontWeight: 700 } }, '🧠 智子内核（system prompt 注入）'),
-    row('开启内核模式', '开启后把「智子内核」（第一性原理 + 五步纲领）注入每次对话的 system prompt，团队/角色协作用上它。开启即 token 成本（每轮 ~200-800 字）。', kernelOn, function (v) { if (scope) scope.set('kernelOn', v); }),
-    React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 } },
-      React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 2 } },
-        React.createElement('span', { style: { fontWeight: 600 } }, '内核档位'),
-        React.createElement('span', { style: { fontSize: 12, opacity: 0.6 } }, 'minimal 最省 / balanced 均衡 / full 最全（含示例）。')),
-      React.createElement('div', { style: { display: 'flex', gap: 6 } },
-        ['minimal', 'balanced', 'full'].map(function (m) {
-          var labels = { minimal: '精简', balanced: '均衡', full: '完整' };
-          var act = (value.kernelMode || 'balanced') === m;
-          return React.createElement('button', { key: m, onClick: function () { if (scope) scope.set('kernelMode', m); }, 'aria-pressed': act,
-            style: { cursor: 'pointer', padding: '5px 10px', borderRadius: 7, fontSize: 12, border: '1px solid var(--dsw-alias-border-l1,#ccc)', background: act ? '#7c3aed' : 'var(--dsw-alias-bg-layer-1,#fff)', color: act ? '#fff' : 'var(--dsw-alias-label-primary)' } }, labels[m]);
-        }))),
-    React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 } },
-      React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 2 } },
-        React.createElement('span', { style: { fontWeight: 600 } }, '语气 / 语言'),
-        React.createElement('span', { style: { fontSize: 12, opacity: 0.6 } }, '语气（傲慢/温和/热忱）与语言（中/英）。')),
-      React.createElement('div', { style: { display: 'flex', gap: 6 } },
-        ['arrogant', 'gentle', 'warm'].map(function (tn) {
-          var labels = { arrogant: '傲慢', gentle: '温和', warm: '热忱' };
-          var act = (value.kernelTone || 'arrogant') === tn;
-          return React.createElement('button', { key: tn, onClick: function () { if (scope) scope.set('kernelTone', tn); }, 'aria-pressed': act,
-            style: { cursor: 'pointer', padding: '5px 9px', borderRadius: 7, fontSize: 12, border: '1px solid var(--dsw-alias-border-l1,#ccc)', background: act ? '#7c3aed' : 'var(--dsw-alias-bg-layer-1,#fff)', color: act ? '#fff' : 'var(--dsw-alias-label-primary)' } }, labels[tn]);
-        }),
-        React.createElement('button', { key: 'lang', onClick: function () { if (scope) scope.set('kernelLang', (value.kernelLang || 'zh') === 'zh' ? 'en' : 'zh'); }, style: { cursor: 'pointer', padding: '5px 9px', borderRadius: 7, fontSize: 12, border: '1px solid var(--dsw-alias-border-l1,#ccc)', background: 'var(--dsw-alias-bg-layer-1,#fff)', color: 'var(--dsw-alias-label-primary)' } }, (value.kernelLang || 'zh') === 'zh' ? '中文' : 'EN'))),
-    row('自称', '「' + ((value.kernelSelf || '').trim() || '本尊') + '」。在设置里改，或留空用默认。', false, function () {}),
-    React.createElement('div', { style: { fontSize: 12, opacity: 0.8 } },
-      React.createElement('input', { defaultValue: value.kernelSelf || '', placeholder: '自称（默认 本尊）', onBlur: function (e) { if (scope) scope.set('kernelSelf', e.target.value || ''); }, style: { width: '100%', padding: '6px 10px', borderRadius: 7, border: '1px solid var(--dsw-alias-border-l1,#ccc)', background: 'var(--dsw-alias-bg-layer-1,#fff)', color: 'inherit', fontSize: 12 } })),
-    row('称呼主上', '「' + ((value.kernelMaster || '').trim() || '主上') + '」', false, function () {}),
-    React.createElement('div', { style: { fontSize: 12, opacity: 0.8 } },
-      React.createElement('input', { defaultValue: value.kernelMaster || '', placeholder: '称呼（默认 主上）', onBlur: function (e) { if (scope) scope.set('kernelMaster', e.target.value || ''); }, style: { width: '100%', padding: '6px 10px', borderRadius: 7, border: '1px solid var(--dsw-alias-border-l1,#ccc)', background: 'var(--dsw-alias-bg-layer-1,#fff)', color: 'inherit', fontSize: 12 } })),
-    React.createElement('div', { style: { fontSize: 12, opacity: 0.8 } },
-      React.createElement('textarea', { defaultValue: value.kernelOverride || '', placeholder: '内核覆盖（可选）：粘贴自定义内核文本，优先级最高；占位 {{self}}/{{master}} 会替换。', onBlur: function (e) { if (scope) scope.set('kernelOverride', e.target.value || ''); }, style: { width: '100%', minHeight: 70, padding: '6px 10px', borderRadius: 7, border: '1px solid var(--dsw-alias-border-l1,#ccc)', background: 'var(--dsw-alias-bg-layer-1,#fff)', color: 'inherit', fontSize: 12, resize: 'vertical' } })),
-    React.createElement('div', { style: { fontSize: 12, opacity: 0.55, lineHeight: 1.7 } },
-      React.createElement('div', null, '· 开启后内核进入每次对话上下文（token 成本）；团队/角色协作用上第一性原理 + 五步纲领。')),
     React.createElement('div', { style: { borderTop: '1px solid var(--dsw-alias-border-l2, #eee)', paddingTop: 14, fontSize: 13, fontWeight: 700 } }, '🤖 像素人 AI 闲聊'),
     row('AI 聊天', '像素人的闲聊台词接入 AI（内置，走 dsh 自配模型）。开启会消耗 token，默认关闭走罐头台词。', aiOn, function (v) { CHAT_AI.set(v); }),
     row('台词频率', '当前：' + freqLabel + '。低频最省 token，高频更热闹。', cfg.freq === 'high', function () {
@@ -1935,7 +1924,6 @@ function apply(ctx) {
    * （参考 dsh-ui-three-body：const scope = ctx.settingsScope.bind({namespace}) 在 apply 顶部绑定一次） */
   try {
     var pixeScope = ctx.get('settingsScope').bind({ namespace: 'agents-pixe' });
-    PIXE_SCOPE = pixeScope;
     slots.inject('settings.section', function () {
       return slots.register(
         { name: 'settings.section', id: 'agents-pixe', order: 20, label: '像素办公室',

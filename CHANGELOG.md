@@ -4,6 +4,21 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.0.11] - 2026-08-24
+
+### 移除（不再注入内核）
+
+- **移除本插件全部内核注入**：删除客户端内核设置 UI（开启内核模式/档位/语气/人设/覆盖）、`shortInstruction` 附 `【内核】`、`kernelText/currentKernel`，删除 host schema 内核字段与 `registerKernel` 常驻注入，删除 `lib/kernel.js`（及 build 的 `KERNEL_DATA` 注入）。**内核改用第三方插件**：README 新增推荐 [dsh-ui-three-body](https://github.com/EternalNight996/dsh-ui-three-body) 并介绍。
+
+### 新增
+
+- **像素人左键点击 → 打开角色卡详情**：办公室浮层点击任一像素人，弹出该角色**完整角色卡**（定位/使命/关键规则/交付物/沟通风格/工作流程全章节，1:1 上游），分段展示可滚动。host 新增 `GET /agents-pixe/role?key=` 端点返回完整卡。
+- README 补充：像素人点击功能说明、内核推荐 three-body、后续待办（新增编排多轮协作/成员传递中间产物/provider 混合、角色卡详情快捷键、自定义角色表单编辑器等）。
+
+### 变更
+
+- build-client 移除 kernel 数据注入；`package.json` `files` 去掉 `lib/kernel.js`。
+
 ## [1.0.10] - 2026-08-24
 
 ### 变更（内核注入方式改用「随行携带」）
