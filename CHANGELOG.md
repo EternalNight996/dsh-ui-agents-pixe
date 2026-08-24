@@ -4,6 +4,15 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.0.10] - 2026-08-24
+
+### 变更（内核注入方式改用「随行携带」）
+
+- **内核不再常驻 system prompt**（移除 host `registerKernel` 每次对话注入）——改为**随「应用到对话」一起注入**：「开启内核模式」时，`shortInstruction` 生成的指令末尾附一段 `【内核】`（第一性原理 + 五步纲领），随角色/团队信息一起进对话框；**你点发送才调取内核**，不碰角色时内核零 token 成本。
+- 内核文本单源：`lib/kernel.js` 导出 `ZH/EN/TONE_LINE`，`build-client` 注入客户端 `KERNEL_DATA`（宿主 / 浏览器文本同源，不会漂移）。
+- 客户端新增 `kernelText()` 生成器 + `currentKernel()` 读设置分区 `kernelOn/mode/lang/tone/self/master/override`；应用到对话（`shortInstruction`、一键编排）都随指令携带。改档位/语气/人设实时生效（无需重启）。
+- host `settings` schema 保留内核字段（`kernelOn/kernelMode/...`）供客户端读取；宿主不再注入。
+
 ## [1.0.9] - 2026-08-19
 
 ### 新增

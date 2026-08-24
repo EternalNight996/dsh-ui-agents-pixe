@@ -261,12 +261,48 @@ var PRESETS = [
   { name: '客户成功团队', leader: 'specialized/customer-success-manager', roles: ['specialized/customer-success-manager', 'support/support-support-responder', 'specialized/retail-customer-returns', 'support/support-analytics-reporter'] }
 ];
 
+/* ---------- 智子内核（客户端随行版）：随「应用到对话」一起注入对话框 ---------- */
+var PIXE_SCOPE = null;   // 设置分区绑定的 settingsScope（apply() 里赋值，供 shortInstruction 读取内核配置）
+function kernelText(mode, lang, persona) {
+  var self = (persona.selfName || '本尊').trim() || '本尊';
+  var master = (persona.userTitle || '主上').trim() || '主上';
+  var tone = persona.tone || 'arrogant';
+  if (persona.override && persona.override.trim()) {
+    return persona.override.split('{{self}}').join(self).split('{{master}}').join(master);
+  }
+  var D = lang === 'en' ? KERNEL_DATA.EN : KERNEL_DATA.ZH;
+  var text = (D[mode] || D.balanced).split('{{self}}').join(self).split('{{master}}').join(master);
+  var tl = ((KERNEL_DATA.TONE_LINE[lang] || KERNEL_DATA.TONE_LINE.zh)[tone] || '')
+    .split('{{self}}').join(self).split('{{master}}').join(master);
+  if (tl && text.indexOf('\n\n') >= 0) text = text.replace('\n\n', '\n\n' + tl + '\n\n');
+  return text;
+}
+/* 读当前内核配置（来自设置分区 scope.getSnapshot().value）；返回要附加进指令的内核文本，或 '' */
+function currentKernel() {
+  try {
+    if (!PIXE_SCOPE || typeof PIXE_SCOPE.getSnapshot !== 'function') return '';
+    var snap = PIXE_SCOPE.getSnapshot();
+    var v = (snap && snap.value && typeof snap.value === 'object') ? snap.value : {};
+    if (v.kernelOn !== true) return '';
+    return kernelText(v.kernelMode, v.kernelLang || 'zh', {
+      selfName: v.kernelSelf || '', userTitle: v.kernelMaster || '', tone: v.kernelTone || '', override: v.kernelOverride || ''
+    });
+  } catch (e) { return ''; }
+}
+
 function shortInstruction(records, leaderKey, teamName) {
   if (records.length === 0) return '';
-  if (records.length === 1 && !leaderKey) return '请以「' + records[0].name + '」的角色身份回应。';
-  var label = teamName || (leaderKey && INDEX.map[leaderKey] ? INDEX.map[leaderKey].name + '团队' : '角色团队');
-  var names = records.map(function (r) { return (r.key === leaderKey ? '👑' : '') + r.name; }).join('、');
-  return '请以「' + label + '」团队协作回应（' + names + '）。';
+  var instr;
+  if (records.length === 1 && !leaderKey) instr = '请以「' + records[0].name + '」的角色身份回应。';
+  else {
+    var label = teamName || (leaderKey && INDEX.map[leaderKey] ? INDEX.map[leaderKey].name + '团队' : '角色团队');
+    var names = records.map(function (r) { return (r.key === leaderKey ? '👑' : '') + r.name; }).join('、');
+    instr = '请以「' + label + '」团队协作回应（' + names + '）。';
+  }
+  /* 「开启内核模式」时随指令一起注入内核，发送时模型一并调取 */
+  var k = currentKernel();
+  if (k) instr += '\n\n【内核】' + k;
+  return instr;
 }
 
 /* ---------- 像素小人 ---------- */
@@ -1899,6 +1935,7 @@ function apply(ctx) {
    * （参考 dsh-ui-three-body：const scope = ctx.settingsScope.bind({namespace}) 在 apply 顶部绑定一次） */
   try {
     var pixeScope = ctx.get('settingsScope').bind({ namespace: 'agents-pixe' });
+    PIXE_SCOPE = pixeScope;
     slots.inject('settings.section', function () {
       return slots.register(
         { name: 'settings.section', id: 'agents-pixe', order: 20, label: '像素办公室',

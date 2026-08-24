@@ -31,29 +31,14 @@ test('kernelForMode：en/full 与 tone 行插入', async () => {
   assert.ok(/^The heart of it/m.test(t), '应含结束语')
 })
 
-test('host hook：kernelOn 开启时注入内核 system prompt 分段', async () => {
-  // mock：settings 返回 kernelOn=true；systemPrompt.section 捕获注入文本
-  let capturedText = null
-  let sectionName = null
-  const mockSettings = {
-    register() {
-      const state = { kernelOn: true, kernelMode: 'balanced', kernelLang: 'zh', kernelTone: 'gentle', kernelSelf: '洒家', kernelMaster: '老板', kernelOverride: '' }
-      return { get: () => ({ ...state }), watch: () => () => {} }
-    },
-  }
-  const mockSys = {
-    section(o) { capturedText = o.text; sectionName = o.name; return { dispose() {} } },
-  }
-  const ctx = {
-    tools: { register: () => ({ dispose() {} }) },
-    systemPrompt: mockSys,
-    get: (k) => ({ settings: mockSettings, webServer: { register: () => ({ dispose() {} }) }, llm: {}, subagents: undefined }[k]),
-    config: {},
-    effect: (fn) => { const r = fn(); if (typeof r === 'function') r(); },
-  }
-  const mod = await import(pathToFileURL(join(root, 'lib', 'index.js')).href)
-  mod.apply(ctx)
-  assert.ok(capturedText, '应捕获内核注入文本')
-  assert.equal(sectionName, 'agents-pixe:kernel', '分段 name 应为 agents-pixe:kernel')
-  assert.ok(capturedText.includes('洒家') && capturedText.includes('老板'), '应注入替换后的人设')
+test('内核数据源导出可用（host/client 同源）', async () => {
+  const mod = await import(pathToFileURL(join(root, 'lib', 'kernel.js')).href)
+  assert.ok(mod.ZH && mod.ZH.balanced && mod.ZH.full, '应导出 ZH 三档')
+  assert.ok(mod.EN && mod.EN.balanced, '应导出 EN')
+  assert.ok(mod.TONE_LINE && mod.TONE_LINE.zh, '应导出 TONE_LINE')
+  // 文本同源：client 的 KERNEL_DATA 来自 build-client 注入 lib/kernel.js 的数据
+  const client = readFileSync(join(root, 'lib', 'client.js'), 'utf8')
+  assert.ok(client.includes('var KERNEL_DATA'), 'client bundle 应注入 KERNEL_DATA')
+  assert.ok(client.includes(mod.ZH.balanced.slice(0, 20)), 'client 内核文本应与 kernel.js 同源')
 })
+
