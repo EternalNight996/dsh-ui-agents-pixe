@@ -4,6 +4,17 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.0.9] - 2026-08-19
+
+### 新增
+
+- **智子内核（kernel）**：新增 `lib/kernel.js`（三档 × 两语 × 三语气 + 人设占位），设置 → 像素办公室 → 「开启内核模式」开关 + 档位/语气/语言/自称/称呼/内核覆盖。开启后在每次对话的 system prompt 注入「第一性原理 + 五步纲领（问清→方案→章程→执行→交付）」，团队/角色协作用上它；自定义覆盖文本优先级最高。
+- host `settings` schema 增加 `kernelOn/kernelMode/kernelLang/kernelTone/kernelSelf/kernelMaster/kernelOverride`；`registerKernel` 独立于角色工具开关，`scope.watch` 动态生效。
+
+### 修复
+
+- **一键团队编排按钮**：工作角色页签新增「🚀 一键编排」（走 `inputActions.setDraft` 可靠路径，`应用到对话` 同款）；办公室浮层的按钮加点击反馈（成功提示/失败提示）——原先浮层拿不到 `inputActions`，只能靠脆弱的 textarea DOM setter，导致点了像"没反应"。
+
 ## [1.0.8] - 2026-08-19
 
 ### 新增
