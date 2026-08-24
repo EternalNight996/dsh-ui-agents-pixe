@@ -34,7 +34,7 @@ dsh plugin --profile web add dshmarket
 - 📦 **持久客户端插件**：npm 双面包 + 组合补丁层，包内自挂载（`dsh.bundle.patch`），安装即生效，重启不丢。
 
 <p align="center">
-  <img src="assets/demo.gif" width="640" alt="dsh-ui-agents-pixe 全功能演示：工作角色页签 + 像素办公室浮层（真实录屏）" />
+  <img src="assets/screen/demo.gif" width="640" alt="dsh-ui-agents-pixe 全功能演示：工作角色页签 + 像素办公室浮层（真实录屏）" />
 </p>
 
 ## 界面预览（真实抓屏）
@@ -44,13 +44,25 @@ dsh plugin --profile web add dshmarket
 ### 🧑‍💼 工作角色页签
 
 <p align="center">
-  <img src="assets/workspace-roles.png" width="820" alt="工作角色页签：选人 / 搜索 / 中英切换" />
+  <img src="assets/screen/workspace-roles.png" width="820" alt="工作角色页签：选人 / 搜索 / 中英切换" />
 </p>
 
 ### 🏢 像素办公室浮层
 
 <p align="center">
-  <img src="assets/pixel-office.png" width="820" alt="像素办公室：像素小人 / 聊天 / 团队编排" />
+  <img src="assets/screen/workspace-pixe.png" width="820" alt="像素办公室：像素小人 / 团队编排 / 聊天" />
+</p>
+
+### 📇 点击像素人 → 查看完整角色卡
+
+<p align="center">
+  <img src="assets/screen/workspace-pixe2.png" width="820" alt="点击像素人弹出完整角色卡（Identity / Core Mission / Critical Rules / Checklist 全章节）" />
+</p>
+
+### ⚙️ 设置 → 像素办公室（角色工具 / 取卡粒度）
+
+<p align="center">
+  <img src="assets/screen/workspace-setting.png" width="820" alt="设置 → 像素办公室：角色工具开关 + 取卡粒度（完整卡/仅规则/仅交付物）" />
 </p>
 
 > 更多完整桌面壳效果（对话主界面等）见 [dsh-desktop](https://github.com/EternalNight996/dsh-desktop) 的 README。

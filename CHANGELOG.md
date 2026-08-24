@@ -4,6 +4,29 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.0.16] - 2026-08-24
+
+### 变更
+
+- **选人面板宽度贴合像素办公室**：改为与画布同宽（`Math.max(360, 520*zoom)`，不超出浮层），推荐团队/已保存团队 chips 用 `flexGrow` 均匀铺满整行——既不留白、也不超出浮层（此前 640 太宽、auto 又留白）。
+- **README 截图更新**：界面预览改用 `assets/screen/` 目录，新增「点击像素人查看完整角色卡」「设置 → 像素办公室（角色工具/取卡粒度）」两张真实抓屏，删除旧 assets/ 根目录图。
+- 修正含空格文件名 `workspace-roles .png` → `workspace-roles.png`。
+
+## [1.0.15] - 2026-08-24
+
+### 修复（角色工具无法开启 · 根因解除）
+
+- **根因**：`settings.register('agents-pixe', …, { base: (ctx.config && …) ? ctx.config : {} })` 访问了 `ctx.config`，但插件 `inject` 数组从未声明 `'config'` → cordis 抛 `cannot get property "config" without inject` → `settings.register` 失败 → `scope=null` → 开关绑定不到可写 namespace → **角色工具/取卡粒度纹丝不动**。
+- **修复**：`base` 改传 `{}`（不再访问 `ctx.config`，schema 自带默认值足够），register 不再抛；角色工具可正常开启并写盘。
+- **选人面板**：推荐团队/已保存团队 chips 加 `flexGrow:1, textAlign:'center'`（铺满整行防右侧留白）。
+
+## [1.0.14] - 2026-08-24
+
+### 修复
+
+- **一键编排按钮 ReferenceError**：办公室浮层版 `oneClickTeam` 引用了未声明的 `inputActions`（那是「工作角色页签」才有的）→ 点击即 `ReferenceError` 崩溃、毫无反馈。改为**复制指令到剪贴板 + 填草稿 + 跳转对话 + 弹提示**「✅ 已生成并复制，黏贴后补任务发送」。
+- host `cardMode` 改 `z.union(['full','rules','deliverables']).default('full')`（对齐 dsh-ui-three-body）+ catch 写完整 stack。
+
 ## [1.0.13] - 2026-08-24
 
 ### 变更
