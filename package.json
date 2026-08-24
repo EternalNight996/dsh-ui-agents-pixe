@@ -1,7 +1,7 @@
 {
   "name": "dsh-ui-agents-pixe",
   "description": "给 DeepSeek Harness Web 主窗口加「工作角色」页签 + 对话区像素人办公室浮层（The Agency en / agency-agents-zh 255+ 角色，29 预设团队）。一条命令安装，不改 dsh 源码。",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
