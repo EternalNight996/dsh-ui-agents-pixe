@@ -691,6 +691,14 @@ function fetchModels(force) {
     .then(function (j) { MODELS_CACHE = (j && Array.isArray(j.providers)) ? j.providers : []; return MODELS_CACHE; })
     .catch(function () { return MODELS_CACHE || []; });
 }
+/* token 数格式化：1234 → 1.2K，1200000 → 1.2M */
+function fmtTok(n) {
+  var v = Number(n) || 0;
+  if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
+  if (v >= 1000) return (v / 1000).toFixed(1) + 'K';
+  return String(v);
+}
+
 /* 模型调用计数：GET /agents-pixe/stats → { calls, fails } */
 function fetchStats() {
   return fetch('/agents-pixe/stats')
@@ -1173,6 +1181,7 @@ function OfficeOverlay(props) {
   var [draftN, setDraftN] = React.useState(sid ? STATE.getDraft().length : 0);
   var [draftLeader, setDraftLeader] = React.useState(sid ? STATE.getLeader() : null);
   var [aiOn, setAiOn] = React.useState(CHAT_AI.isOn());
+  var [tok, setTok] = React.useState({ in: 0, out: 0 });
   var drag = React.useRef(null);
   var resize = React.useRef(null);
   var prevSidRef = React.useRef(sid);
@@ -1200,7 +1209,7 @@ function OfficeOverlay(props) {
     return function () { u1(); u2(); u3(); u4(); };
   }, [sid]);
 
-  /* 运行态轮询：直接读当前会话快照的 running + 当前活动内容 */
+  /* 运行态轮询：直接读当前会话快照的 running + 当前活动内容；顺带读全局 token 计量投影 */
   React.useEffect(function () {
     if (!SESSIONS_SVC || !TIMER_SVC) return;
     function poll() {
@@ -1219,6 +1228,16 @@ function OfficeOverlay(props) {
             act = '🔧 ' + nm;
           } else {
             act = '✍️ 正在输出…';
+          }
+        }
+        /* 全局 token 计量（真实 provider usage，tokenUsage 投影）：含缓存读写 */
+        if (s && s.projections && typeof s.projections.get === 'function') {
+          var tu = s.projections.get('tokenUsage');
+          if (tu && typeof tu === 'object') {
+            setTok({
+              in: (tu.uncachedInputTokens || 0) + (tu.cacheReadTokens || 0) + (tu.cacheWriteTokens || 0),
+              out: tu.outputTokens || 0
+            });
           }
         }
       } catch (e) {}
@@ -1305,7 +1324,11 @@ function OfficeOverlay(props) {
     },
       React.createElement('span', { style: { flex: 1, display: 'flex', alignItems: 'center', gap: 6 } },
         React.createElement('span', { style: { width: 8, height: 8, borderRadius: 4, background: running ? '#22c55e' : '#94a3b8', display: 'inline-block', flexShrink: 0 } }),
-        '🖥️ 像素办公室（' + roles.length + '）'
+        '🖥️ 像素办公室（' + roles.length + '）',
+        tok && (tok.in > 0 || tok.out > 0)
+          ? React.createElement('span', { title: '当前会话全局 token 计量（含缓存读写，真实 provider 用量；非像素人闲聊独占）', style: { fontSize: 11, fontWeight: 500, opacity: 0.75, flexShrink: 0 } },
+              '↑' + fmtTok(tok.in) + ' ↓' + fmtTok(tok.out))
+          : null
       ),
       React.createElement('button', { onClick: function () { setPickerOpen(!pickerOpen); }, title: '选择角色', style: { cursor: 'pointer', border: '1px solid var(--dsw-alias-border-l1,#ccc)', background: 'var(--dsw-alias-bg-layer-1,#fff)', color: 'inherit', borderRadius: 7, padding: '6px 14px', fontSize: 14, lineHeight: 1.3 } }, pickerOpen ? '收起' : '＋ 选人'),
       React.createElement('button', { onClick: function () { setZoom(Math.max(0.5, zoom - 0.25)); }, title: '缩小', style: { cursor: 'pointer', border: '1px solid var(--dsw-alias-border-l1,#ccc)', background: 'var(--dsw-alias-bg-layer-1,#fff)', color: 'inherit', borderRadius: 7, padding: '6px 12px', fontSize: 15, lineHeight: 1.3 } }, '−'),
@@ -1742,9 +1765,11 @@ function PixeSettingsSection(props) {
   var cfg = CHAT_CFG.get();
   var freqLabel = { low: '低频（最省 token）', medium: '中频', high: '高频（接近实时）' }[cfg.freq] || '中频';
   return React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 18, padding: 16, maxWidth: 560 } },
-    row('角色工具', '开启后每轮模型调用注入 agents_pixe_roles 工具与提示段（约 250 token/轮）；默认关闭零消耗。', enabled, function (v) { if (scope) scope.set('enabled', v); }),
+    row('角色工具', '开启后注入 agents_pixe_roles（取角色卡，默认完整卡，可只取规则/交付物章节省 token）与 agents_pixe_team（真团队编排：领袖拆解→成员子代理并行→汇总，更耗 token）。默认关闭零消耗。', enabled, function (v) { if (scope) scope.set('enabled', v); }),
     React.createElement('div', { style: { fontSize: 12, opacity: 0.55, lineHeight: 1.7 } },
-      React.createElement('div', null, '· 启用后调角色也只返回精简卡（定位 + 关键规则前 3 条 + 沟通风格，单卡 ≤500 字符），绝不导入全量角色卡。'),
+      React.createElement('div', null, '· agents_pixe_roles 默认返回完整角色卡（1:1 上游 508 张）；只要单章节传 sections=rules/deliverables 更省。'),
+      React.createElement('div', null, '· agents_pixe_team 会开 N+2 个子代理（每个带完整卡独立执行），成本高，深度任务再用。'),
+      React.createElement('div', null, '· 办公室浮层标题栏实时显示当前会话全局 token 计量（↑输入 ↓输出，含缓存读写）。'),
       React.createElement('div', null, '· AI 闲聊开关在办公室浮层顶部（默认关，走罐头台词，零模型调用；开启后有每小时预算管控）。')),
     React.createElement('div', { style: { borderTop: '1px solid var(--dsw-alias-border-l2, #eee)', paddingTop: 14, fontSize: 13, fontWeight: 700 } }, '🤖 像素人 AI 闲聊'),
     row('AI 聊天', '像素人的闲聊台词接入 AI（内置，走 dsh 自配模型）。开启会消耗 token，默认关闭走罐头台词。', aiOn, function (v) { CHAT_AI.set(v); }),
