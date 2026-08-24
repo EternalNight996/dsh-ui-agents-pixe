@@ -4,6 +4,14 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.0.13] - 2026-08-24
+
+### 变更
+
+- **选人面板内容宽度扩展**：推荐团队区 340px → 440px，一行显示更多团队，不再拥挤。
+- **一键团队编排按钮修复**：办公室浮层拿不到 dsh `setDraft`（React 受控 textarea 会被覆盖导致点了没反应），改为**复制指令到剪贴板 + 跳转对话 + 提示**（可靠有反馈）；工作角色页签的「🚀 一键编排」仍走 `setDraft` 可靠路径。
+- **角色工具无法开启诊断**：host `settings.register` 失败时不再静默吞异常，改 `console.error('[agents-pixe] settings.register 失败: …')` 暴露原因；新增 `GET /agents-pixe/settings` 诊断端点（返回 `hasScope/value/settingsAvailable`），用于定位「角色工具无法开启」的宿主侧根因。
+
 ## [1.0.12] - 2026-08-24
 
 ### 变更

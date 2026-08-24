@@ -1334,20 +1334,24 @@ function OfficeOverlay(props) {
     STATE.setName(t.name);
   }
 
-  /* 一键团队编排：把当前选中团队送进 agents_pixe_team 指令，填草稿并聚焦对话，补任务即可发送 */
+  /* 一键团队编排：浮层拿不到 dsh setDraft（React 受控 textarea 会被覆盖），改用复制到剪贴板 + 跳转对话粘贴 */
   function oneClickTeam() {
     if (draftN === 0) return;
     var name = STATE.getName() || '当前团队';
     var instr = '让「' + name + '」团队并行完成：';
+    var copied = false;
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      navigator.clipboard.writeText(instr).then(function () { copied = true; }).catch(function () {});
+    }
     if (inputActions && typeof inputActions.setDraft === 'function') { inputActions.setDraft(instr); }
     else {
-      var done = fillInput(instr);
-      if (!done) { setTeamMsg('⚠️ 未找到输入框，请复制：' + instr); return; }
+      fillInput(instr);
+      setTeamMsg('✅ 已生成「' + name + '」编排指令并复制，到对话框「黏贴」后补一句任务再发送');
     }
-    setTeamMsg('✅ 已生成「' + name + '」编排指令，去对话补一句任务再发送');
-    if (teamMsgTimer) clearTimeout(teamMsgTimer);
-    teamMsgTimer = setTimeout(function () { setTeamMsg(''); }, 4000);
+    if (teamMsgTimer.current) clearTimeout(teamMsgTimer.current);
+    teamMsgTimer.current = setTimeout(function () { setTeamMsg(''); }, 5000);
     jumpToChat(props);
+    return void copied;
   }
 
   var roles = snap.roles;
@@ -1421,7 +1425,7 @@ function OfficeOverlay(props) {
       React.createElement('span', { onClick: function (e) { e.stopPropagation(); setCollapsed(true); }, title: '折叠', style: { cursor: 'pointer', fontSize: 17, lineHeight: 1, padding: '6px 6px', alignSelf: 'center' } }, '—')
     ),
     pickerOpen
-      ? React.createElement('div', { style: { padding: 10, width: 340, maxHeight: 460, overflowY: 'auto' } },
+      ? React.createElement('div', { style: { padding: 10, width: 440, maxHeight: 460, overflowY: 'auto' } },
           React.createElement('div', { style: { fontSize: 12, fontWeight: 700, opacity: 0.92, marginBottom: 6 } }, '推荐团队'),
           React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 6 } },
             PRESETS.map(function (p) { return React.createElement('span', { key: p.name, onClick: function () { loadTeamIntoDraft(p); }, style: { cursor: 'pointer', borderRadius: 14, padding: '3px 10px', fontSize: 12, border: '1px solid var(--dsw-alias-border-l1,#ccc)', background: 'var(--dsw-alias-bg-layer-1,#fff)', color: 'inherit' } }, '⭐ ' + p.name); })
