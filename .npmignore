@@ -1,0 +1,14 @@
+# 展示资源（随 Git 同步，不进 npm 包）
+assets/
+docs/
+
+# 开发文件
+scripts/
+src/
+*.mjs
+*.md
+
+# 配置
+.eslint*
+.prettier*
+tsconfig*

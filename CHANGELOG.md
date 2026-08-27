@@ -4,6 +4,14 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.0.18] - 2026-08-28
+
+### 变更
+
+- **assets/screen 二次瘦身**：`demo.gif` 480px 压缩至 1700KB（↓17%），`workspace-pixe.png` 缩至 1200px/765KB（↓32%），`workspace-roles.png` 缩至 1200px/590KB（↓26%），总大小从 4.5MB 降至 ~3.2MB。
+- **新增 `.npmignore`**：明确排除 `assets/`、`docs/`、`scripts/`、`src/` 等开发资源，npm 包更干净。
+- **scripts 精简**：`scripts/names.mjs` 内联至 `gen-roles.mjs`，删除独立文件。
+
 ## [1.0.17] - 2026-08-24
 
 ### 变更
