@@ -4,6 +4,14 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.0.17] - 2026-08-24
+
+### 变更
+
+- **npm 包瘦身**：`package.json` 的 `files` 移除 `assets/`——运行代码不再携带展示截图/壁纸；`assets/screen` 仅随 Git（GitHub/Gitee 展示），README 界面预览指向 `assets/screen` 真实抓屏。
+- **展示图优化瘦身**：`assets/screen` 大图缩到最大宽 1500px（`workspace-pixe` 2341→1500、`workspace-roles` 3840→1500），体积各降约 40%。
+- **精简开发脚本**：删除 `scripts/add-names.mjs`、`scripts/verify-presets.mjs`（构建链路仅需 `build-client` / `gen-roles` / `names`）。
+
 ## [1.0.16] - 2026-08-24
 
 ### 变更
