@@ -4,6 +4,14 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.0.19] - 2026-08-28
+
+### 修复
+
+- **`dsh.client.inject` 缺失导致客户端 UI 不渲染**：与新仓库 [EternalNight996/agent-teams-pixel](https://github.com/EternalNight996/agent-teams-pixel) v0.1.1 同步修复。`package.json` 的 `dsh.client.inject` 此前为 `[]`，dsh-client-modules 不把这些客户端服务排在我的 entry 之前装载，`apply(ctx)` 被调用时 `ctx.get('slots')` 仍为 `undefined`，插件直接 return 而不渲染工作角色页签与像素办公室浮层。补齐 6 个客户端服务依赖：`@deepseek-ai/dsh-client-runtime` / `-connection` / `-locale` / `-ui-settings` / `-ui-slots` / `-ui-session`。
+
+> **注意**：本仓库（`dsh-ui-agents-pixe`）已弃用，新仓库已重命名为 [agent-teams-pixel](https://github.com/EternalNight996/agent-teams-pixel)。此版本仅作历史备份；新安装请使用新名。
+
 ## [1.0.18] - 2026-08-28
 
 ### 变更
